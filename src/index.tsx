@@ -45,9 +45,11 @@ export function honoSimpleGoogleAuth<Env extends HonoEnv = HonoEnv>(options: Hon
     const clientId = options.clientId;
     const loginUri = options.callbackUrl;
     if (options.renderSignInPage) {
-      return c.html(options.renderSignInPage({ clientId, loginUri }));
+      const page = options.renderSignInPage({ clientId, loginUri });
+      return c.html(page ? page.toString() : '');
     } else {
-      return c.html(<GoogleSignInButton clientId={clientId} loginUri={loginUri} />);
+      const page = <GoogleSignInButton clientId={clientId} loginUri={loginUri} />;
+      return c.html(page.toString());
     }
   });
 

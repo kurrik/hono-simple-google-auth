@@ -1,3 +1,5 @@
+import type { FC } from 'hono/jsx';
+
 export interface HonoSimpleGoogleAuthOptions {
   clientId: string;
   callbackUrl: string;
@@ -14,7 +16,7 @@ export interface HonoSimpleGoogleAuthOptions {
    * Receives clientId and loginUri as props.
    * If not provided, the default is <GoogleSignInButton />
    */
-  renderSignInPage?: (props: { clientId: string; loginUri: string }) => JSX.Element;
+  renderSignInPage?: FC<{ clientId: string; loginUri: string }>;
 }
 
 export type TokenInfo = {

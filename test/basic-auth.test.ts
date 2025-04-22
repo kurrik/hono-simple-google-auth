@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { honoSimpleGoogleAuth } from '../index';
+import { honoSimpleGoogleAuth } from '../src/index';
 
 // Example test (replace with real tests)
 describe('honoSimpleGoogleAuth', () => {

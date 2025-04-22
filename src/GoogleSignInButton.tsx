@@ -1,12 +1,14 @@
 /** @jsx jsx */
-import { jsx } from 'hono/jsx';
+/** @jsxImportSource hono/jsx */
+
+import type { FC } from 'hono/jsx'
 
 export interface GoogleSignInButtonProps {
   clientId: string;
   loginUri: string;
 }
 
-export function GoogleSignInButton({ clientId, loginUri }: GoogleSignInButtonProps): JSX.Element {
+export const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({ clientId, loginUri }) => {
   return (
     <div>
       <div class="flex justify-center">
