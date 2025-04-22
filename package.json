@@ -1,0 +1,44 @@
+{
+  "name": "hono-simple-google-auth",
+  "version": "0.1.0",
+  "description": "A simple, customizable Google Sign-In authentication middleware for Hono with JSX/TSX support.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": [
+    "hono",
+    "auth",
+    "google",
+    "middleware",
+    "typescript",
+    "jsx"
+  ],
+  "author": "kurrik",
+  "license": "MIT",
+  "peerDependencies": {
+    "hono": ">=3.7.0"
+  },
+  "dependencies": {
+    "hono": ">=3.7.0"
+  },
+  "devDependencies": {
+    "typescript": ">=5.0.0",
+    "jest": ">=29.0.0",
+    "ts-jest": ">=29.0.0",
+    "@types/jest": ">=29.0.0"
+  }
+}
