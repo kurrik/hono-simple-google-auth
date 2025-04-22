@@ -1,5 +1,7 @@
 # hono-simple-google-auth
 
+[![npm version](https://badge.fury.io/js/hono-simple-google-auth.svg)](https://www.npmjs.com/package/hono-simple-google-auth)
+
 A simple, customizable Google Sign-In authentication subapp for [Hono](https://hono.dev/) with JSX/TSX support. Easily add Google authentication to your Hono app, with optional support for custom sign-in pages and seamless integration with Cloudflare Workers.
 
 ---
