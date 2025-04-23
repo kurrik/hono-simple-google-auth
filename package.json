@@ -2,13 +2,13 @@
   "name": "hono-simple-google-auth",
   "version": "0.1.1",
   "description": "A simple, customizable Google Sign-In authentication middleware for Hono with JSX/TSX support.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/src/index.js",
+      "require": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
     }
   },
   "files": [
