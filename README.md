@@ -6,6 +6,12 @@ A simple, customizable Google Sign-In authentication subapp for [Hono](https://h
 
 ---
 
+## TypeScript Support
+
+This package is written in TypeScript and ships with full type definitions. If you are using TypeScript, you will get type checking and autocompletion automatically when you import from `hono-simple-google-auth`—no additional setup is required.
+
+---
+
 ## Features
 - Plug-and-play Google OAuth for Hono
 - Customizable sign-in page (use your own TSX/JSX component)

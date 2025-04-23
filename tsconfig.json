@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./dist", 
+    "declaration": true, 
+    "emitDeclarationOnly": false,
     "module": "ESNext",
     "target": "ESNext",
     "lib": [
@@ -30,7 +32,6 @@
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "test"
+    "dist"
   ]
 }
