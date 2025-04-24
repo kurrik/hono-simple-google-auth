@@ -18,19 +18,49 @@ async function verifyCredential(credential: string): Promise<TokenInfo | null> {
   }
 }
 
-// Export a Hono sub-app for Google authentication and session injection
-// Usage: mainApp.route('/auth', honoSimpleGoogleAuth(options))
+// Export a Hono sub-app and session middleware for Google authentication
+// Usage:
+//   const googleAuth = honoSimpleGoogleAuth(provider)
+//   app.route('/auth', googleAuth.routes)
+//   app.use('/your-path', googleAuth.session)
+// See README for full usage.
 export function honoSimpleGoogleAuth(
   provider: HonoSimpleGoogleAuthOptionsProvider
-): Hono<GoogleAuthEnv, {}, "/"> {
-  const router = new Hono<GoogleAuthEnv, {}, "/">();
-
+): {
+  routes: Hono<GoogleAuthEnv, {}, "/">,
+  session: MiddlewareHandler<GoogleAuthEnv>
+} {
   // Middleware to resolve options and inject into context
   const optionsMiddleware: MiddlewareHandler<GoogleAuthEnv> = async (c, next) => {
     const options = await provider(c);
     c.set('googleAuthOptions', options);
     await next();
   };
+
+  // Session middleware (for use on any route)
+  const sessionMiddleware: MiddlewareHandler<GoogleAuthEnv> = async (c, next) => {
+    // Always inject options first
+    await optionsMiddleware(c, async () => {
+      const options = c.var.googleAuthOptions!;
+      const COOKIE_NAME = options.cookieName || 'auth_session_cookie';
+      const sessionStore = options.sessionStore;
+      const sessionId = getCookie(c, COOKIE_NAME);
+      if (sessionId) {
+        const session = await sessionStore.get(sessionId);
+        if (session) {
+          c.set('session', session);
+        } else {
+          c.set('session', { signedIn: false, error: 'Session not found' });
+        }
+      } else {
+        c.set('session', { signedIn: false, error: 'No session cookie' });
+      }
+      await next();
+    });
+  };
+
+  const router = new Hono<GoogleAuthEnv, {}, "/">();
+  router.use(optionsMiddleware);
 
   // /signin: Render Google Sign-In button
   router.get('/signin', async (c) => {
@@ -99,29 +129,11 @@ export function honoSimpleGoogleAuth(
     return c.redirect('/');
   });
 
-  // Middleware: Inject session info into c.var.session (cast to add .var)
-  const sessionMiddleware: MiddlewareHandler<GoogleAuthEnv> = async (c, next) => {
-    const options = c.var.googleAuthOptions!;
-    const COOKIE_NAME = options.cookieName || 'auth_session_cookie';
-    const sessionStore = options.sessionStore;
-    const sessionId = getCookie(c, COOKIE_NAME);
-    if (sessionId) {
-      const session = await sessionStore.get(sessionId);
-      if (session) {
-        c.set('session', session);
-      } else {
-        c.set('session', { signedIn: false, error: 'Session not found' });
-      }
-    } else {
-      c.set('session', { signedIn: false, error: 'No session cookie' });
-    }
-    await next();
-  };
 
-  // Return a composed Hono instance with session injection and routes
-  const composed = new Hono<GoogleAuthEnv, {}, "/">();
-  composed.use(optionsMiddleware);
-  composed.use(sessionMiddleware);
-  composed.route('/', router);
-  return composed;
+
+  // Attach middleware directly to router and return it
+  return {
+    routes: router,
+    session: sessionMiddleware
+  };
 }

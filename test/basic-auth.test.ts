@@ -14,6 +14,7 @@ describe('honoSimpleGoogleAuth', () => {
     };
     const wrappedHonoSimpleGoogleAuth = honoSimpleGoogleAuth(async () => mockOptions);
     expect(typeof wrappedHonoSimpleGoogleAuth).toBe('object');
-    expect(typeof wrappedHonoSimpleGoogleAuth.fetch).toBe('function');
+    expect(typeof wrappedHonoSimpleGoogleAuth.routes).toBe('object');
+    expect(typeof wrappedHonoSimpleGoogleAuth.session).toBe('function');
   });
 });

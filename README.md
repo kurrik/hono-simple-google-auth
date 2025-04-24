@@ -41,14 +41,21 @@ import { Hono } from 'hono';
 import { honoSimpleGoogleAuth } from 'hono-simple-google-auth';
 const app = new Hono();
 
-// Provide options dynamically per request (async, gets c.env)
-app.route('/auth', honoSimpleGoogleAuth(async (c) => ({
+// Create the auth subapp and session middleware
+const googleAuth = honoSimpleGoogleAuth(async (c) => ({
   clientId: c.env.GOOGLE_CLIENT_ID,
   callbackUrl: c.env.CALLBACK_URL,
   sessionStore: mySessionStore,
   // Optionally, provide a custom sign-in page:
   // renderSignInPage: ({ clientId, loginUri }) => <YourCustomSignInComponent clientId={clientId} loginUri={loginUri} />
-})));
+}));
+
+// Mount all auth endpoints
+app.route('/auth', googleAuth.routes);
+
+// Add session middleware to any route you want session info
+app.use('/dashboard', googleAuth.session);
+app.use('/', googleAuth.session);
 
 app.get('/', (c) => {
   // Access user info from session (if signed in)

@@ -36,7 +36,8 @@ describe('Session Management', () => {
     mockFetch.mockReturnValue(Promise.resolve(new Response(JSON.stringify({}), { status: 200 })));
     global.fetch = mockFetch;
     const auth = honoSimpleGoogleAuth(async () => mockOptions);
-    app.route('/', auth);
+    app.route('/', auth.routes);
+    app.use(auth.session);
     app.get('/', (c) => c.text('Hello', 200));
   });
 
