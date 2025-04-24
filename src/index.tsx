@@ -1,5 +1,7 @@
 /** @jsx jsx */
 export type { GoogleAuthEnv } from './types';
+export { createKVSessionStore } from './kvSessionStore';
+export { GoogleSignInButton } from './GoogleSignInButton';
 import type { Env as HonoEnv } from 'hono';
 import { MiddlewareHandler, Hono } from 'hono';
 import { setCookie, getCookie } from 'hono/cookie';

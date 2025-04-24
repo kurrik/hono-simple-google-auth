@@ -124,6 +124,28 @@ export default app;
 
 ---
 
+## Cloudflare Workers: Built-in KV Session Store
+
+This package exports a helper for using [Cloudflare Workers KV](https://developers.cloudflare.com/workers/runtime-apis/kv/) as your session store:
+
+```ts
+import { createKVSessionStore } from 'hono-simple-google-auth';
+
+// In your Worker, assuming env.SESSION_KV is your KVNamespace binding:
+const sessionStore = createKVSessionStore(env.SESSION_KV);
+
+const googleAuth = honoSimpleGoogleAuth(async (c) => ({
+  clientId: c.env.GOOGLE_CLIENT_ID,
+  callbackUrl: c.env.CALLBACK_URL,
+  sessionStore,
+}))
+```
+
+- `createKVSessionStore` is exported from the package root and can be used wherever you need a Cloudflare Workers-compatible session store.
+- This is optional; you can provide your own session store implementation if not using Workers KV.
+
+---
+
 ## Customizing the Sign-In Page
 
 You can provide your own TSX/JSX component for the sign-in page:
