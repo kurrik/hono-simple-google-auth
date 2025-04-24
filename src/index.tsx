@@ -1,8 +1,6 @@
 /** @jsx jsx */
 export type { GoogleAuthEnv } from './types';
-// hono-simple-google-auth: Hono middleware for Google authentication
-// Sets up /signin, /auth, /signout and injects session info into context
-
+import type { Env as HonoEnv } from 'hono';
 import { MiddlewareHandler, Hono } from 'hono';
 import { setCookie, getCookie } from 'hono/cookie';
 import type { HonoSimpleGoogleAuthOptionsProvider, ValidSessionData, SigninCallbackData, TokenInfo, GoogleAuthEnv } from './types';
@@ -25,21 +23,21 @@ async function verifyCredential(credential: string): Promise<TokenInfo | null> {
 //   app.route('/auth', googleAuth.routes)
 //   app.use('/your-path', googleAuth.session)
 // See README for full usage.
-export function honoSimpleGoogleAuth(
-  provider: HonoSimpleGoogleAuthOptionsProvider
+export function honoSimpleGoogleAuth<Env extends HonoEnv = HonoEnv>(
+  provider: HonoSimpleGoogleAuthOptionsProvider<GoogleAuthEnv & Env>
 ): {
-  routes: Hono<GoogleAuthEnv, {}, "/">,
-  session: MiddlewareHandler<GoogleAuthEnv>
+  routes: Hono<GoogleAuthEnv & Env, {}, "/">,
+  session: MiddlewareHandler<GoogleAuthEnv & Env>
 } {
   // Middleware to resolve options and inject into context
-  const optionsMiddleware: MiddlewareHandler<GoogleAuthEnv> = async (c, next) => {
+  const optionsMiddleware: MiddlewareHandler<GoogleAuthEnv & Env> = async (c, next) => {
     const options = await provider(c);
     c.set('googleAuthOptions', options);
     await next();
   };
 
   // Session middleware (for use on any route)
-  const sessionMiddleware: MiddlewareHandler<GoogleAuthEnv> = async (c, next) => {
+  const sessionMiddleware: MiddlewareHandler<GoogleAuthEnv & Env> = async (c, next) => {
     // Always inject options first
     await optionsMiddleware(c, async () => {
       const options = c.var.googleAuthOptions!;
@@ -60,7 +58,7 @@ export function honoSimpleGoogleAuth(
     });
   };
 
-  const router = new Hono<GoogleAuthEnv, {}, "/">();
+  const router = new Hono<GoogleAuthEnv & Env, {}, "/">();
   router.use(optionsMiddleware);
 
   // /signin: Render Google Sign-In button
