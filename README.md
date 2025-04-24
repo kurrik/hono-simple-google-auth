@@ -4,17 +4,6 @@
 
 A simple, customizable Google Sign-In authentication subapp for [Hono](https://hono.dev/) with JSX/TSX support. Easily add Google authentication to your Hono app, with optional support for custom sign-in pages and seamless integration with Cloudflare Workers.
 
----
-
-## Breaking Change (v0.2.0+)
-
-> **Note:** The API now requires an async provider function for options. See updated usage below. This enables full compatibility with Cloudflare Workers and other platforms where environment variables are only available at request time.
-
----
-
-## TypeScript Support
-
-This package is written in TypeScript and ships with full type definitions. If you are using TypeScript, you will get type checking and autocompletion automatically when you import from `hono-simple-google-auth`—no additional setup is required.
 
 ---
 
@@ -31,6 +20,16 @@ This package is written in TypeScript and ships with full type definitions. If y
 ```sh
 npm install hono-simple-google-auth hono
 ```
+
+---
+
+## Breaking Changes
+
+### v0.3.0+
+> **Note:** The API now returns an object `{ routes, session }` instead of a Hono app. You must mount `googleAuth.routes` and use `googleAuth.session` as middleware. See updated usage below.
+
+### v0.2.0+
+> **Note:** The API now requires an async provider function for options. See updated usage below. This enables full compatibility with Cloudflare Workers and other platforms where environment variables are only available at request time.
 
 ---
 
@@ -134,14 +133,6 @@ app.route('/auth', honoSimpleGoogleAuth({
   renderSignInPage: CustomSignIn
 }));
 ```
-
----
-
-## Typescript Support
-- All types are included.
-- Works out-of-the-box with `hono/jsx`.
-
----
 
 ## License
 MIT
