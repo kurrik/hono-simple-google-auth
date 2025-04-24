@@ -6,6 +6,12 @@ A simple, customizable Google Sign-In authentication subapp for [Hono](https://h
 
 ---
 
+## Breaking Change (v0.2.0+)
+
+> **Note:** The API now requires an async provider function for options. See updated usage below. This enables full compatibility with Cloudflare Workers and other platforms where environment variables are only available at request time.
+
+---
+
 ## TypeScript Support
 
 This package is written in TypeScript and ships with full type definitions. If you are using TypeScript, you will get type checking and autocompletion automatically when you import from `hono-simple-google-auth`—no additional setup is required.
@@ -33,24 +39,28 @@ npm install hono-simple-google-auth hono
 ```ts
 import { Hono } from 'hono';
 import { honoSimpleGoogleAuth } from 'hono-simple-google-auth';
-
 const app = new Hono();
 
-app.route('/auth', honoSimpleGoogleAuth({
-  clientId: '<GOOGLE_CLIENT_ID>',
-  callbackUrl: 'https://your-app.com/auth/callback',
+// Provide options dynamically per request (async, gets c.env)
+app.route('/auth', honoSimpleGoogleAuth(async (c) => ({
+  clientId: c.env.GOOGLE_CLIENT_ID,
+  callbackUrl: c.env.CALLBACK_URL,
+  sessionStore: mySessionStore,
   // Optionally, provide a custom sign-in page:
   // renderSignInPage: ({ clientId, loginUri }) => <YourCustomSignInComponent clientId={clientId} loginUri={loginUri} />
-}));
+})));
 
 app.get('/', (c) => {
   // Access user info from session (if signed in)
-  const user = c.get('googleUser');
-  if (user) {
+  const user = c.var.session;
+  if (user?.signedIn) {
     return c.text(`Hello, ${user.name} (${user.email})`);
   }
   return c.redirect('/auth/signin');
 });
+
+// For type safety, you can use:
+const options = c.get<HonoSimpleGoogleAuthOptions>('googleAuthOptions');
 
 export default app;
 ```
@@ -59,7 +69,7 @@ export default app;
 
 ## Cloudflare Workers Integration
 
-No special configuration is required! Just use as above. However, make sure your `wrangler.toml` or deployment configuration allows environment variables for your Google client ID and secrets.
+No special configuration is required! Just use the async provider pattern as shown above. This allows you to access `c.env` for secrets and environment variables in a type-safe way.
 
 **Example:**
 
@@ -67,15 +77,27 @@ No special configuration is required! Just use as above. However, make sure your
 import { Hono } from 'hono';
 import { honoSimpleGoogleAuth } from 'hono-simple-google-auth';
 
-export default new Hono()
-  .route('/auth', honoSimpleGoogleAuth({
-    clientId: GOOGLE_CLIENT_ID,
-    callbackUrl: 'https://<your-worker-subdomain>.workers.dev/auth/callback',
-  }))
-  .get('/', (c) => {
-    const user = c.get('googleUser');
-    return c.text(user ? `Hello, ${user.name}` : 'Not signed in');
-  });
+const app = new Hono();
+
+app.route('/auth', honoSimpleGoogleAuth(async (c) => ({
+  clientId: c.env.GOOGLE_CLIENT_ID,
+  callbackUrl: c.env.CALLBACK_URL,
+  sessionStore: mySessionStore,
+})));
+
+app.get('/', (c) => {
+  // Access user info from session (if signed in)
+  const user = c.var.session;
+  if (user?.signedIn) {
+    return c.text(`Hello, ${user.name} (${user.email})`);
+  }
+  return c.redirect('/auth/signin');
+});
+
+// For type safety, you can use:
+// const options = c.get<HonoSimpleGoogleAuthOptions>('googleAuthOptions');
+
+export default app;
 ```
 
 **Notes:**

@@ -1,5 +1,7 @@
 import type { FC } from 'hono/jsx';
 
+import type { Context } from 'hono';
+
 export interface HonoSimpleGoogleAuthOptions {
   clientId: string;
   callbackUrl: string;
@@ -18,6 +20,20 @@ export interface HonoSimpleGoogleAuthOptions {
    */
   renderSignInPage?: FC<{ clientId: string; loginUri: string }>;
 }
+
+// Provider function type for dynamic options
+// Custom Env type for Hono context variables used by the middleware
+import type { Env as HonoEnv } from 'hono';
+
+export type GoogleAuthEnv = HonoEnv & {
+  Variables: {
+    session?: SessionData;
+    googleAuthOptions?: HonoSimpleGoogleAuthOptions;
+  }
+};
+
+export type HonoSimpleGoogleAuthOptionsProvider = (c: Context<GoogleAuthEnv, string>) => Promise<HonoSimpleGoogleAuthOptions>;
+
 
 export type TokenInfo = {
   iss: string;

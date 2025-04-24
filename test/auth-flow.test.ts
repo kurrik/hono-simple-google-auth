@@ -36,7 +36,7 @@ describe('Authentication Flow', () => {
     jest.resetAllMocks();
     global.fetch = jest.fn() as unknown as FetchFn;
     app = new Hono();
-    app.route('/auth', honoSimpleGoogleAuth(mockOptions));
+    app.route('/auth', honoSimpleGoogleAuth(async () => mockOptions));
   });
 
   describe('Sign-in Page', () => {
@@ -89,7 +89,7 @@ describe('Authentication Flow', () => {
       };
 
       const customApp = new Hono();
-      customApp.route('/auth', honoSimpleGoogleAuth(customOptions));
+      customApp.route('/auth', honoSimpleGoogleAuth(async () => customOptions));
 
       const response = await customApp.request('/auth/signin');
       expect(response.status).toBe(200);
