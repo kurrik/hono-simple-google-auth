@@ -23,6 +23,18 @@ npm install hono-simple-google-auth hono
 
 ---
 
+## TypeScript Support
+
+This package is written in TypeScript and ships with full type definitions. If you are using TypeScript, you will get type checking and autocompletion automatically when you import from `hono-simple-google-auth`—no additional setup is required.
+
+**For full type safety:**
+```ts
+import type { GoogleAuthEnv } from 'hono-simple-google-auth';
+const app = new Hono<GoogleAuthEnv>();
+```
+
+---
+
 ## Breaking Changes
 
 ### v0.3.0+

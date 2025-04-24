@@ -1,4 +1,5 @@
 /** @jsx jsx */
+export type { GoogleAuthEnv } from './types';
 // hono-simple-google-auth: Hono middleware for Google authentication
 // Sets up /signin, /auth, /signout and injects session info into context
 
