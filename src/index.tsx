@@ -61,7 +61,7 @@ export function honoSimpleGoogleAuth<Env extends HonoEnv = HonoEnv>(
   };
 
   const router = new Hono<GoogleAuthEnv & Env, {}, "/">();
-  router.use(optionsMiddleware);
+  router.use("*", optionsMiddleware);
 
   // /signin: Render Google Sign-In button
   router.get('/signin', async (c) => {
