@@ -17,7 +17,7 @@ describe('Session Management', () => {
 
   const mockOptions: HonoSimpleGoogleAuthOptions = {
     clientId: 'test-client-id',
-    callbackUrl: 'http://localhost:3000/auth',
+    callbackUrl: 'http://localhost:3000/callback',
     sessionStore: mockSessionStore,
     cookieName: 'test_session',
     cookieDomain: 'test.com',
@@ -53,7 +53,7 @@ describe('Session Management', () => {
       (global.fetch as jest.Mock).mockReturnValue(Promise.resolve(new Response(JSON.stringify(mockTokenInfo), { status: 200 })));
 
       const credential = 'mock-credential';
-      const response = await app.request('/auth', {
+      const response = await app.request('/callback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

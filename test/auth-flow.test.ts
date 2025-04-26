@@ -26,7 +26,7 @@ describe('Authentication Flow', () => {
 
   const mockOptions: HonoSimpleGoogleAuthOptions = {
     clientId: 'test-client-id',
-    callbackUrl: 'http://localhost:3000/auth',
+    callbackUrl: 'http://localhost:3000/callback',
     sessionStore: mockSessionStore,
   };
 
@@ -115,7 +115,7 @@ describe('Authentication Flow', () => {
         return Promise.resolve(new Response(JSON.stringify(mockTokenInfo), { status: 200 }));
       });
 
-      const response = await app.request('/auth/auth', {
+      const response = await app.request('/auth/callback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -132,7 +132,7 @@ describe('Authentication Flow', () => {
         return Promise.resolve(new Response(null, { status: 400 }));
       });
 
-      const response = await app.request('/auth/auth', {
+      const response = await app.request('/auth/callback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -150,7 +150,7 @@ describe('Authentication Flow', () => {
         return Promise.reject(new Error('Network error'));
       });
 
-      const response = await app.request('/auth/auth', {
+      const response = await app.request('/auth/callback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
