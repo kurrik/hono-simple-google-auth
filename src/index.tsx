@@ -86,7 +86,7 @@ export function honoSimpleGoogleAuth<Env extends HonoEnv = HonoEnv>(
   });
 
   // /auth: Google callback
-  router.post('/auth', async (c) => {
+  router.post('/callback', async (c) => {
     const options = c.var.googleAuthOptions!;
     const COOKIE_NAME = options.cookieName || 'auth_session_cookie';
     const COOKIE_DOMAIN = options.cookieDomain;
