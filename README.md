@@ -148,12 +148,10 @@ This package exports a helper for using [Cloudflare Workers KV](https://develope
 import { createKVSessionStore } from 'hono-simple-google-auth';
 
 // In your Worker, assuming env.SESSION_KV is your KVNamespace binding:
-const sessionStore = createKVSessionStore(env.SESSION_KV);
-
 const googleAuth = honoSimpleGoogleAuth(async (c) => ({
   clientId: c.env.GOOGLE_CLIENT_ID,
   callbackUrl: c.env.CALLBACK_URL,
-  sessionStore,
+  sessionStore: createKVSessionStore(c.env.SESSION_KV),
 }))
 ```
 
