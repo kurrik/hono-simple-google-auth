@@ -37,6 +37,9 @@ const app = new Hono<GoogleAuthEnv>();
 
 ## Breaking Changes
 
+### v0.4.0+
+> **Note:** The Google callback route has changed from `/auth` to `/callback`. You must update any routes or reverse proxies that expect the callback at `/auth` to use `/callback` instead. This is a breaking minor change. See updated usage below.
+
 ### v0.3.0+
 > **Note:** The API now returns an object `{ routes, session }` instead of a Hono app. You must mount `googleAuth.routes` and use `googleAuth.session` as middleware. See updated usage below.
 
