@@ -357,6 +357,15 @@ describe('Authentication Tests', () => {
 ```
 
 ---
+## Development
+
+Release a new version:
+```zsh
+npm version minor
+npm publish
+```
+
+---
 
 ## License
 MIT
