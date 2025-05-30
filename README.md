@@ -37,6 +37,9 @@ const app = new Hono<GoogleAuthEnv>();
 
 ## Breaking Changes
 
+### v0.5.0+
+> **Note:** The `mode` field is now required in the options object. You must specify either `'livemode'` for Google OAuth or `'testmode'` for testing. This enables explicit control over authentication behavior.
+
 ### v0.4.0+
 > **Note:** The Google callback route has changed from `/auth` to `/callback`. You must update any routes or reverse proxies that expect the callback at `/auth` to use `/callback` instead. This is a breaking minor change. See updated usage below.
 
@@ -60,6 +63,7 @@ const googleAuth = honoSimpleGoogleAuth(async (c) => ({
   clientId: c.env.GOOGLE_CLIENT_ID,
   callbackUrl: c.env.CALLBACK_URL,
   sessionStore: mySessionStore,
+  mode: 'livemode', // Required: 'livemode' for Google OAuth, 'testmode' for testing
   // Optionally, provide a custom sign-in page:
   // renderSignInPage: ({ clientId, loginUri }) => <YourCustomSignInComponent clientId={clientId} loginUri={loginUri} />
 }));
@@ -114,6 +118,7 @@ const googleAuth = honoSimpleGoogleAuth<Env>(async (c) => {
     clientId: c.env.GOOGLE_CLIENT_ID,
     callbackUrl,
     sessionStore: createKVSessionStore(c.env.KV),
+    mode: 'livemode',
   };
 });
 
@@ -149,6 +154,7 @@ const googleAuth = honoSimpleGoogleAuth(async (c) => ({
   clientId: c.env.GOOGLE_CLIENT_ID,
   callbackUrl: c.env.CALLBACK_URL,
   sessionStore: createKVSessionStore(c.env.SESSION_KV),
+  mode: 'livemode',
 }))
 ```
 
@@ -172,12 +178,185 @@ const CustomSignIn = ({ clientId, loginUri }) => (
   </div>
 );
 
-app.route('/auth', honoSimpleGoogleAuth({
+const googleAuth = honoSimpleGoogleAuth(async (c) => ({
   clientId: '<GOOGLE_CLIENT_ID>',
   callbackUrl: 'https://your-app.com/auth/callback',
+  sessionStore: mySessionStore,
+  mode: 'livemode',
   renderSignInPage: CustomSignIn
 }));
+
+app.route('/auth', googleAuth.routes);
 ```
+
+---
+
+## Test Mode
+
+For testing and development, you can use the built-in test mode instead of Google OAuth. Test mode provides a simple way to simulate user authentication without requiring actual Google credentials.
+
+### Basic Test Mode Setup
+
+```ts
+import { Hono } from 'hono';
+import { honoSimpleGoogleAuth } from 'hono-simple-google-auth';
+
+const app = new Hono();
+
+// Create session store (in-memory for testing)
+const sessionStore = {
+  data: new Map(),
+  async get(sessionId) { return this.data.get(sessionId); },
+  async put(session) { this.data.set(session.sessionId, session); },
+  async delete(sessionId) { this.data.delete(sessionId); }
+};
+
+const googleAuth = honoSimpleGoogleAuth(async (c) => ({
+  clientId: 'test-client-id', // Can be any string in test mode
+  callbackUrl: 'http://localhost:3000/auth/callback', // Can be any URL in test mode
+  sessionStore,
+  mode: 'testmode', // Enable test mode
+}));
+
+app.route('/auth', googleAuth.routes);
+app.use('/api/*', googleAuth.session);
+
+// Protected route
+app.get('/api/me', async (c) => {
+  const session = c.var.session;
+  if (!session?.signedIn) return c.json({ error: 'Not authenticated' }, 401);
+  return c.json({ name: session.name, email: session.email });
+});
+
+export default app;
+```
+
+### Test Mode Endpoints
+
+Test mode provides these endpoints:
+
+- **GET `/auth/signin`** - Displays a simple test form for signing in
+- **POST `/auth/test/signin`** - Accepts JSON with `{ name, email }` to create a test session
+- **GET `/auth/signout`** - Clears the test session
+- **POST `/auth/callback`** - No-op in test mode (just redirects)
+
+### Programmatic Test Authentication
+
+In your tests, you can programmatically sign in users:
+
+```ts
+// Test sign-in
+const response = await app.request('/auth/test/signin', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'Test User',
+    email: 'test@example.com'
+  })
+});
+
+// Response: { success: true, session: { ... } }
+
+// Now the user is signed in for subsequent requests
+const protectedResponse = await app.request('/api/me');
+// Response: { name: 'Test User', email: 'test@example.com' }
+```
+
+### Test Mode Session Management
+
+Test mode uses the same session store interface as live mode, so sessions persist across requests:
+
+```ts
+// Sign in
+await app.request('/auth/test/signin', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ name: 'John Doe', email: 'john@test.com' })
+});
+
+// Session persists for subsequent requests
+const response1 = await app.request('/api/me'); // ✅ Authenticated
+const response2 = await app.request('/api/profile'); // ✅ Authenticated
+
+// Sign out
+await app.request('/auth/signout');
+
+// Now unauthenticated
+const response3 = await app.request('/api/me'); // ❌ 401 Unauthorized
+```
+
+### Environment-Based Mode Selection
+
+You can dynamically choose between live and test mode based on your environment:
+
+```ts
+const googleAuth = honoSimpleGoogleAuth(async (c) => ({
+  clientId: c.env.GOOGLE_CLIENT_ID || 'test-client-id',
+  callbackUrl: c.env.CALLBACK_URL || 'http://localhost:3000/auth/callback',
+  sessionStore: c.env.NODE_ENV === 'test' ? testSessionStore : liveSessionStore,
+  mode: c.env.NODE_ENV === 'test' ? 'testmode' : 'livemode',
+}));
+```
+
+### Jest/Vitest Testing Example
+
+```ts
+import { describe, it, expect, beforeEach } from '@jest/globals';
+import { honoSimpleGoogleAuth } from 'hono-simple-google-auth';
+import { Hono } from 'hono';
+
+describe('Authentication Tests', () => {
+  let app;
+
+  beforeEach(() => {
+    const sessionData = new Map();
+    const sessionStore = {
+      async get(id) { return sessionData.get(id); },
+      async put(session) { sessionData.set(session.sessionId, session); },
+      async delete(id) { sessionData.delete(id); }
+    };
+
+    app = new Hono();
+    const googleAuth = honoSimpleGoogleAuth(async () => ({
+      clientId: 'test',
+      callbackUrl: 'http://test/callback',
+      sessionStore,
+      mode: 'testmode',
+    }));
+
+    app.route('/auth', googleAuth.routes);
+    app.use('/api/*', googleAuth.session);
+    app.get('/api/me', async (c) => {
+      const session = c.var.session;
+      if (!session?.signedIn) return c.json({ error: 'Not authenticated' }, 401);
+      return c.json({ name: session.name, email: session.email });
+    });
+  });
+
+  it('should authenticate user in test mode', async () => {
+    // Sign in
+    await app.request('/auth/test/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Test User', email: 'test@example.com' })
+    });
+
+    // Access protected endpoint
+    const response = await app.request('/api/me');
+    expect(response.status).toBe(200);
+
+    const data = await response.json();
+    expect(data).toEqual({ name: 'Test User', email: 'test@example.com' });
+  });
+
+  it('should reject unauthenticated requests', async () => {
+    const response = await app.request('/api/me');
+    expect(response.status).toBe(401);
+  });
+});
+```
+
+---
 
 ## License
 MIT
