@@ -28,6 +28,7 @@ describe('Authentication Flow', () => {
     clientId: 'test-client-id',
     callbackUrl: 'http://localhost:3000/callback',
     sessionStore: mockSessionStore,
+    mode: 'livemode',
   };
 
   let app: Hono;

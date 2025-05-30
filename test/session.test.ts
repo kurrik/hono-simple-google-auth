@@ -22,6 +22,7 @@ describe('Session Management', () => {
     cookieName: 'test_session',
     cookieDomain: 'test.com',
     sessionDurationSeconds: 3600,
+    mode: 'livemode',
   };
 
   let app: Hono;

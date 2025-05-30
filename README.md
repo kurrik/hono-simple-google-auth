@@ -80,9 +80,6 @@ app.get('/', (c) => {
   return c.redirect('/auth/signin');
 });
 
-// For type safety, you can use:
-const options = c.get<HonoSimpleGoogleAuthOptions>('googleAuthOptions');
-
 export default app;
 ```
 
