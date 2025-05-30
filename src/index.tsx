@@ -6,6 +6,7 @@ import type { Env as HonoEnv } from 'hono';
 import { MiddlewareHandler, Hono } from 'hono';
 import type { HonoSimpleGoogleAuthOptionsProvider, GoogleAuthEnv } from './types';
 import { LivemodeAuthImplementation } from './livemode';
+import { TestmodeAuthImplementation } from './testmode';
 
 
 // Export a Hono sub-app and session middleware for Google authentication
@@ -25,7 +26,8 @@ export function honoSimpleGoogleAuth<Env extends HonoEnv = HonoEnv>(
     const options = await provider(c);
     c.set('googleAuthOptions', options);
     if (options.mode === 'testmode') {
-      // TODO
+      const authImplementation = new TestmodeAuthImplementation();
+      c.set('authImplementation', authImplementation);
     } else {
       const authImplementation = new LivemodeAuthImplementation();
       c.set('authImplementation', authImplementation);
@@ -46,11 +48,21 @@ export function honoSimpleGoogleAuth<Env extends HonoEnv = HonoEnv>(
   const router = new Hono<GoogleAuthEnv & Env, {}, "/">();
   router.use("*", optionsMiddleware);
 
-  // /signin: Render Google Sign-In button
+  // /signin: Render Google Sign-In button (GET) or handle test signin (POST)
   router.get('/signin', async (c) => {
     const options = c.var.googleAuthOptions!;
     const authImplementation = c.var.authImplementation;
     return authImplementation.signinImpl(c, options);
+  });
+
+  // /test/signin: Sets test signin data.
+  router.post('/test/signin', async (c) => {
+    const options = c.var.googleAuthOptions!;
+    const authImplementation = c.var.authImplementation;
+    if (!authImplementation.testSigninImpl) {
+      return c.json({ error: 'Testmode not enabled' }, 400);
+    }
+    return authImplementation.testSigninImpl(c, options);
   });
 
   // /callback: Google callback

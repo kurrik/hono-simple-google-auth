@@ -53,6 +53,7 @@ export interface HonoSimpleGoogleAuthImplementation {
   signinImpl: HonoSimpleGoogleAuthImplementationHandler;
   callbackImpl: HonoSimpleGoogleAuthImplementationHandler;
   signoutImpl: HonoSimpleGoogleAuthImplementationHandler;
+  testSigninImpl?: HonoSimpleGoogleAuthImplementationHandler;
 }
 
 // Token info from Google
